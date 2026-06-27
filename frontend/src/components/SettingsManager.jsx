@@ -123,7 +123,7 @@ function SettingsManager({
                     : 'Activity type'}
                 </span>
               </div>
-              <span className={`user-status ${item.status.toLowerCase()}`}>
+              <span className={`user-status ${(item.status || '').toLowerCase()}`}>
                 {item.status}
               </span>
               <div className="row-actions">

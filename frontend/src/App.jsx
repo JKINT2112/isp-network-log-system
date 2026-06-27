@@ -570,10 +570,18 @@ function App() {
       log.remarks,
     ])
 
+    // Quote every field, and neutralize spreadsheet formula injection by
+    // prefixing values that a spreadsheet would treat as a formula.
+    const escapeCsv = (cell) => {
+      let value = String(cell ?? '')
+      if (/^[=+\-@\t\r]/.test(value)) {
+        value = `'${value}`
+      }
+      return `"${value.replace(/"/g, '""')}"`
+    }
+
     const csvContent = [headers, ...rows]
-      .map((row) =>
-        row.map((cell) => `"${String(cell || '').replace(/"/g, '""')}"`).join(','),
-      )
+      .map((row) => row.map(escapeCsv).join(','))
       .join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -780,7 +788,7 @@ function App() {
                       {member.accessLevel || 'Viewer'}
                     </span>
                   </div>
-                  <span className={`user-status ${member.status.toLowerCase()}`}>
+                  <span className={`user-status ${(member.status || '').toLowerCase()}`}>
                     {member.status}
                   </span>
                   <div className="row-actions">

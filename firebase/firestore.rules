@@ -24,8 +24,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Normalize to lowercase so this matches the team-member document IDs,
+    // which the client stores lowercased (see configService normalizeEmail).
     function userEmail() {
-      return request.auth.token.email;
+      return request.auth.token.email.lower();
     }
 
     function memberPath() {
