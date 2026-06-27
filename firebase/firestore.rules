@@ -1,0 +1,84 @@
+rules_version = '2';
+
+// ISP Network Log System — role-based access control.
+//
+// Access levels live on each teamMembers document (Admin | Engineer | Viewer).
+// teamMembers documents are keyed by the member's lowercased email, so these
+// rules can look up the signed-in user's role with a single get().
+//
+//   Admin    — full read/write, manages users, devices, activity types, logs
+//   Engineer — read everything, create/edit/delete logs
+//   Viewer   — read only
+//   (no record) — no access (fail closed)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ⚠️ CHANGE THIS to your own email before deploying. This is the only
+    // account allowed to bootstrap itself as the first Admin.
+    function seedAdminEmail() {
+      return 'jernan232@gmail.com';
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userEmail() {
+      return request.auth.token.email;
+    }
+
+    function memberPath() {
+      return /databases/$(database)/documents/teamMembers/$(userEmail());
+    }
+
+    function hasMemberRecord() {
+      return isSignedIn() && exists(memberPath());
+    }
+
+    function memberAccess() {
+      return hasMemberRecord() ? get(memberPath()).data.accessLevel : 'None';
+    }
+
+    function isAdmin() {
+      return memberAccess() == 'Admin';
+    }
+
+    function canWriteLogs() {
+      return memberAccess() == 'Admin' || memberAccess() == 'Engineer';
+    }
+
+    function isSeedAdmin() {
+      return isSignedIn() && userEmail() == seedAdminEmail();
+    }
+
+    // Team members — any signed-in user can read (needed to resolve roles).
+    // Admins manage everyone; the seed admin may create only its own Admin
+    // record once, to bootstrap the very first administrator.
+    match /teamMembers/{email} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin()
+        || (isSeedAdmin()
+            && email == userEmail()
+            && request.resource.data.accessLevel == 'Admin');
+      allow update, delete: if isAdmin();
+    }
+
+    // Logs — members read; admins and engineers write.
+    match /logs/{logId} {
+      allow read: if hasMemberRecord();
+      allow create, update, delete: if canWriteLogs();
+    }
+
+    // Devices and activity types — members read; only admins write.
+    match /devices/{id} {
+      allow read: if hasMemberRecord();
+      allow write: if isAdmin();
+    }
+
+    match /activityTypes/{id} {
+      allow read: if hasMemberRecord();
+      allow write: if isAdmin();
+    }
+  }
+}

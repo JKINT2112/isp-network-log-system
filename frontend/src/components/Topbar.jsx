@@ -1,6 +1,6 @@
 import { Plus, Search } from 'lucide-react'
 
-function Topbar({ searchQuery, onSearchChange, onAddLog }) {
+function Topbar({ searchQuery, onSearchChange, onAddLog, canAdd = true }) {
   return (
     <header className="topbar">
       <div>
@@ -20,10 +20,12 @@ function Topbar({ searchQuery, onSearchChange, onAddLog }) {
           />
         </label>
 
-        <button type="button" className="icon-button" onClick={onAddLog} title="Add Log">
-          <Plus size={20} aria-hidden="true" />
-          <span className="sr-only">Add Log</span>
-        </button>
+        {canAdd && (
+          <button type="button" className="icon-button" onClick={onAddLog} title="Add Log">
+            <Plus size={20} aria-hidden="true" />
+            <span className="sr-only">Add Log</span>
+          </button>
+        )}
       </div>
     </header>
   )

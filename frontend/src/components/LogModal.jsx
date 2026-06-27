@@ -1,20 +1,12 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { statusOptions } from '../data/sampleConfig'
-
-const formatRoles = (member) => {
-  if (member?.role) {
-    return member.role
-  }
-
-  const roles = member?.roles || []
-
-  return roles.join(', ')
-}
+import { addStatusOptions, statusOptions } from '../data/sampleConfig'
+import { formatRole } from '../utils/formatRole'
 
 function LogModal({
   initialValues,
   isEditing,
+  accessLevel = 'Engineer',
   teamMembers,
   devices,
   activityTypes,
@@ -23,6 +15,8 @@ function LogModal({
   isSaving = false,
 }) {
   const [formData, setFormData] = useState(initialValues)
+  const canChangeEngineer = accessLevel === 'Admin'
+  const visibleStatuses = isEditing ? statusOptions : addStatusOptions
 
   const updateField = (field, value) => {
     setFormData((currentData) => ({
@@ -38,7 +32,7 @@ function LogModal({
       ...currentData,
       engineerId: member?.id || '',
       engineerName: member?.name || '',
-      role: formatRoles(member),
+      role: formatRole(member),
     }))
   }
 
@@ -82,18 +76,22 @@ function LogModal({
         <form className="log-form" onSubmit={handleSubmit}>
           <label>
             Engineer Name
-            <select
-              required
-              value={formData.engineerId || ''}
-              onChange={(event) => handleEngineerChange(event.target.value)}
-            >
-              <option value="">Select engineer</option>
-              {teamMembers.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </select>
+            {canChangeEngineer ? (
+              <select
+                required
+                value={formData.engineerId || ''}
+                onChange={(event) => handleEngineerChange(event.target.value)}
+              >
+                <option value="">Select engineer</option>
+                {teamMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input required value={formData.engineerName} readOnly />
+            )}
           </label>
 
           <label>
@@ -164,7 +162,7 @@ function LogModal({
               value={formData.status}
               onChange={(event) => updateField('status', event.target.value)}
             >
-              {statusOptions.map((status) => (
+              {visibleStatuses.map((status) => (
                 <option key={status}>{status}</option>
               ))}
             </select>
