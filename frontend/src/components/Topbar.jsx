@@ -4,7 +4,7 @@ function Topbar({ searchQuery, onSearchChange, onAddLog, canAdd = true }) {
   return (
     <header className="topbar">
       <div>
-        <p className="topbar-kicker">ISP Network Log System</p>
+        <p className="topbar-kicker">MegaFiber Networks</p>
         <h2>Field and infrastructure activity</h2>
       </div>
 

@@ -17,5 +17,9 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Allow `const { id, ...rest } = obj` to intentionally strip a property.
+      'no-unused-vars': ['error', { ignoreRestSiblings: true }],
+    },
   },
 ])

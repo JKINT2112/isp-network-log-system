@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
-import { CheckCircle2, Pencil, Plus, ShieldCheck, Trash2, X } from 'lucide-react'
+import { CheckCircle2, Pencil, Plus, Trash2, X } from 'lucide-react'
 import Sidebar from './components/Sidebar'
+import BrandMark from './components/BrandMark'
 import Topbar from './components/Topbar'
 import StatCard from './components/StatCard'
 import LogsTable from './components/LogsTable'
@@ -169,6 +170,9 @@ function App() {
 
   useEffect(() => {
     if (!user) return
+    // Kick off data fetches once auth resolves. Each loader is async and owns
+    // its loading/error state, so this does not cause a cascading render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadLogs()
     loadConfig()
   }, [user, loadLogs, loadConfig])
@@ -671,10 +675,7 @@ function App() {
             {logsError && <div className="error-message">{logsError}</div>}
 
             {isLoadingLogs ? (
-              <div className="empty-state" role="status" aria-live="polite">
-                <strong>Loading logs</strong>
-                <p>Fetching the latest network activity records.</p>
-              </div>
+              <LogsSkeleton />
             ) : (
               <LogsTable
                 logs={filteredLogs}
@@ -863,19 +864,26 @@ function App() {
   )
 }
 
+function LogsSkeleton() {
+  return (
+    <div className="logs-skeleton" role="status" aria-live="polite">
+      <span className="sr-only">Loading network logs…</span>
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div className="skeleton-row" key={index} aria-hidden="true">
+          <span className="skeleton skeleton-line wide" />
+          <span className="skeleton skeleton-line" />
+          <span className="skeleton skeleton-badge" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function NotAuthorized({ email, onLogout }) {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="login-brand">
-          <span className="brand-mark">
-            <ShieldCheck size={22} aria-hidden="true" />
-          </span>
-          <div>
-            <strong>ISP Logs</strong>
-            <span>NOC Console</span>
-          </div>
-        </div>
+        <BrandMark className="brand--card" />
 
         <h1>Access pending</h1>
         <p>

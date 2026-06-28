@@ -8,10 +8,10 @@ import {
   Plus,
   ScrollText,
   Settings,
-  ShieldCheck,
   Users,
   X,
 } from 'lucide-react'
+import BrandMark from './BrandMark'
 
 const allNavItems = [
   { label: 'Dashboard', view: 'dashboard', icon: Gauge, minLevel: 'Viewer' },
@@ -54,15 +54,7 @@ function Sidebar({ activeView, onNavigate, onLogout, accessLevel = 'Viewer' }) {
     <>
       <aside className="sidebar" aria-label="Main navigation">
         <div className="sidebar-top">
-          <div className="brand">
-            <span className="brand-mark">
-              <ShieldCheck size={22} aria-hidden="true" />
-            </span>
-            <div>
-              <strong>ISP Logs</strong>
-              <span>NOC Console</span>
-            </div>
-          </div>
+          <BrandMark />
         </div>
 
         <nav className="nav-list" id="primary-navigation">
